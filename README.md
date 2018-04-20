@@ -13,9 +13,20 @@ Morph-xR2RML was developed by the [I3S laboratory](http://www.i3s.unice.fr/) as 
 The SPARQL-to-SQL rewriting is an adaptation of the former Morph-RDB implementation, it supports SPARQL SELECT and DESCRIBE queries.
 
 #### SPARQL-to-MongoDB
-The SPARQL-to-MongoDB rewriting is a fully new component, it supports SELECT, ASK, CONSTRUCT and DESCRIBE queries.
+The SPARQL-to-MongoDB rewriting is a fully new component, it supports the SELECT, ASK, CONSTRUCT and DESCRIBE query forms.
 
-To the best of our knowledge, Morph-xR2RML is the **first tool to support the querying of arbitrary MongoDB documents using SPARQL**.
+
+## Changes
+
+#### 2017-10-25: new propety xrr:pushDown 
+Property xrr:pushDown extends the mapping possibilities when defining iterations within a document (pull request #3 with the help of Freddy Priyatna, to fulfill a need of the [SlideWiki project](https://slidewiki.eu/)). 
+When iterating in a sub-part of a document (e.g. a JSON array), that property helps use values of fields that are higher in the document hierarchy, hence not accessible inside this sub-part of the document. See complete description in [2]. Implemented for the MongoDB database.
+Example: a property ```xrr:pushDown [ xrr:reference "$.id"; xrr:as "newId"]``` can be defined either in the logical source together with an  rml:iterator, or within a referenced-valued term map that has a nested term map.
+  - In a logical source: the xrr:reference "$.id" is evaluated against the current document, then the iterator is applied and in each document that comes out of the iterator, a new field ("newID" in this example) is added.
+  - In a reference-valued term map, the xrr:reference "$.id" is evaluated against the document of the current iteration, and a new field ("newID" in this example) is added inside the documents that are passed to the nested term map.
+
+#### 2017-09-05: full implementation of the nested term maps
+Complex nested term maps (nested term map that embed another nested term map) are now enabled, thus allowing to deal with any level of nested documents (pull request #1 with the help of Freddy Priyatna). Implemented for the MongoDB database.
 
 
 ## Publications
@@ -35,14 +46,14 @@ https://hal.archives-ouvertes.fr/hal-01245883.
 
 [6] F. Michel, C. Faron-Zucker, and J. Montagnat. A Mapping-Based Method to Query MongoDB Documents with SPARQL. In *27th International Conference on Database and Expert Systems Applications (DEXA 2016)*, 2016.
 
-
 ## Limitations
 
 ##### xR2RML Language support
 - The generation of RDF collection and containers is supported in all cases (from a list of values resulting of the evaluation of a mixed syntax path typically, from the result of a join query implied by a referencing object map), except in the case of a regular R2RML join query applied to a relational database: the result of the join SQL query cannot be translated into an RDF collection or container.
-- Only simple NestedTermMaps are implemented i.e. to qualify RDF terms generated within an RDF collection/container.
-More complex nested term maps (with recursive parsing using another nested term map and using xrr:reference or rr:template properties) are not supported.
-- Named target graphs are not supported.
+- Named graphs are supported although they are not printed out in Turtle. It would be quite easy to extend it with a N-Quad serialization to allow for writing triples in named graphs. 
+
+The former limitation on NestedTermMaps was lifted in Sept. 2017. All types of NestedTermMaps are now fully implemented, so that any complex iterations and collection/container nesting can be defined.
+
 
 ##### Query rewriting 
 The query rewriting is implemented for RDBs and MongoDB, with the restriction that _no mixed syntax paths be used_. Doing query rewriting with mixed syntax paths is a much more complex problem, that may not be possible in all situations (it would require to "revert" expressions such as JSONPath or XPath to retrieve source data base values).
@@ -103,11 +114,11 @@ In directories `morph-xr2rml-dist/example_mongo` and `morph-xr2rml-dist/example_
 
 - `testdb_dump.json` is a dump of the MongoDB test database: copy and paste the content of that file into a MongoDB shell window to create the database;
 - `morph.properties` provides database connection details;
-- `mapping.ttl` contains the xR2RML mapping graph;
-- `result.txt` contains the expected result;
+- `mapping1.ttl` to `mapping4.ttl` contain xR2RML mapping graphs illustrating various features of the language;
+- `result1.txt` to `result4.txt` contain the expected result of the mappings 1 to 4;
 - `query.sparql` (in directory `example_mongo_rewriting` only) contains a SPARQL query to be executed against the test database.
 
-Edit `morph.properties` and change the database url, name, user and password with appropriate values.
+Edit `morph.properties` and change the database URL, name, user and password with appropriate values.
 
 > _**Note about query optimization**_: the xR2RML xrr:uniqueRef notation is of major importance for query optimization as it allows for self-joins elimination. Check example in `morph-xr2rml-dist/example_taxref_rewriting`.
 
@@ -117,7 +128,7 @@ In directories `morph-xr2rml-dist/example_mysql` and `morph-xr2rml-dist/example_
 
 - `testdb_dump.sql` is a dump of the MySQL test database. You may import it into a MySQL instance by running command `mysql -u root -p test < testdb_dump.sql`;
 - `morph.properties` provides database connection details;
-- `mapping.ttl` contains the xR2RML mapping graph;
+- `mapping.ttl` contains an example xR2RML mapping graph;
 - `result.txt` contains the expected result of applying this mapping to that database;
 - `query.sparql` (in directory `example_mysql_rewriting` only) contains a SPARQL query to be executed against the test database.
 
@@ -129,7 +140,7 @@ Edit `morph.properties` and change the database url, name, user and password wit
 ```
 # -- xR2RML mapping file (Mandatory):
 # path relative to the configuration directory given in parameter --configDir
-mappingdocument.file.path=mapping.ttl
+mappingdocument.file.path=mapping1.ttl
 
 # -- Server mode: true|false. Default: false
 # false: stand-alone application that performs either graph materialization or query rewriting
