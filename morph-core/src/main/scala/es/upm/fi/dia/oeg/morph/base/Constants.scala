@@ -150,6 +150,8 @@ object Constants {
     val QUERY_RESULT_XMLWRITER_OUTPUT_DEFAULT = "output.rdf.xml";
 
     val REMOVE_STRANGE_CHARS_FROM_LITERAL = "literal.removestrangechars";
+    val TRIM_LITERAL = "literal.trim";
+    
     val ENCODE_UNSAFE_CHARS_IN_URI = "uricolumn.encode_uri";
     val ENCODE_UNSAFE_CHARS_IN_DB_VALUES = "uricolumn.encode_unsafe_chars_dbvalues";
 
@@ -255,6 +257,9 @@ object Constants {
 
     val R2RML_LANGUAGE_URI = R2RML_NS + "language";
     val R2RML_LANGUAGE_PROPERTY = ResourceFactory.createProperty(R2RML_LANGUAGE_URI);
+
+    val R2RML_LANGUAGE_MAP_URI = xR2RML_NS + "languageReference";
+    val R2RML_LANGUAGE_MAP_PROPERTY = ResourceFactory.createProperty(R2RML_LANGUAGE_MAP_URI);
 
     //--- TermMap Types
     val R2RML_CONSTANT_URI = R2RML_NS + "constant";
